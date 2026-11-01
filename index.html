@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#08b9b5">
+<title>RUN WITH ME</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#effafa;color:#183b3d;font-family:-apple-system,sans-serif}
+header{background:linear-gradient(135deg,#08c7c1,#087f83);color:white;padding:30px 20px;border-radius:0 0 28px 28px}
+h1{font-size:29px;margin:8px 0}
+main{padding:16px;max-width:600px;margin:auto}
+.card{background:white;padding:19px;border-radius:20px;margin:13px 0;box-shadow:0 4px 15px #087f8312}
+h2{font-size:19px}
+.big{font-size:38px;color:#08aaa6;font-weight:bold}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:#ddf8f6;padding:15px;border-radius:16px}
+button{border:0;background:#08b9b5;color:white;padding:13px 17px;border-radius:13px;font-weight:bold;font-size:15px}
+input{padding:12px;border:1px solid #b8dddd;border-radius:10px;width:100%;margin:8px 0}
+nav{position:fixed;bottom:0;background:white;width:100%;display:flex;justify-content:space-around;padding:12px 0}
+nav button{background:white;color:#087f83;padding:8px;font-size:12px}
+section{padding-bottom:75px}
+.hidden{display:none}
+.timer{text-align:center;font-size:42px;color:#087f83;font-weight:bold;margin:20px}
+small{color:#668184}
+</style>
+</head>
+<body>
+<header>
+<small style="color:white">TU ENTRENADORA PERSONAL</small>
+<h1>RUN WITH ME 🩵</h1>
+De cero a 7 km · La Garriga
+</header>
+<main>
+<section id="home">
+<div class="card">
+<small>RETO · 31 DICIEMBRE 2026</small>
+<div class="big">7 KM 🏃‍♀️</div>
+¡Vamos a conseguirlo!
+</div>
+<div class="grid">
+<div class="tile">👟<b>3 días</b><br><small>Por semana</small></div>
+<div class="tile">🎯<b>59-60 kg</b><br><small>Objetivo orientativo</small></div>
+<div class="tile">⏱️<b>Cronómetro</b><br><small>Controla tu tiempo</small></div>
+<div class="tile">🥗<b>Mi dieta</b><br><small>Nutricionista</small></div>
+</div>
+<div class="card">
+<h2>Mi progreso</h2>
+Sesiones: <b id="sessions">0</b><br><br>
+Kilómetros: <b id="kms">0</b> km
+</div>
+</section>
+
+<section id="training" class="hidden">
+<div class="card">
+<h2>🏃 Tu primera semana</h2>
+<b>Día 1</b><p>5 min caminando + 6 repeticiones de 1 min trotando y 2 min caminando + 5 min caminando.</p>
+<b>Día 2</b><p>Repite la sesión cuando estés recuperada.</p>
+<b>Día 3</b><p>5 min caminando + 5 repeticiones de 90 segundos trotando y 2 min caminando + 5 min caminando.</p>
+<small>Deja descanso entre sesiones. Para si aparece dolor o malestar.</small>
+</div>
+<div class="card">
+<h2>Registrar entrenamiento</h2>
+<label>Distancia en km</label>
+<input id="distance" type="number" step="0.01" placeholder="Ej. 2.5">
+<label>Duración en minutos</label>
+<input id="duration" type="number" placeholder="Ej. 25">
+<button onclick="saveRun()">Guardar entrenamiento</button>
+</div>
+<div class="card">
+<h2>⏱️ Cronómetro</h2>
+<div class="timer" id="clock">00:00</div>
+<button onclick="start()">Iniciar</button>
+<button onclick="pause()">Pausar</button>
+<button onclick="reset()">Reiniciar</button>
+</div>
+</section>
+
+<section id="food" class="hidden">
+<div class="card">
+<h2>🥗 Mi dieta</h2>
+Tu plan semanal del nutricionista.
+<p>08:00 · Desayuno</p>
+<p>14:00 · Comida</p>
+<p>17:00 · Merienda</p>
+<p>22:00 · Cena</p>
+<small>Consulta tu PDF para ver las cantidades y alimentos de cada día. No modificaremos las pautas de tu nutricionista.</small>
+</div>
+</section>
+
+<section id="progress" class="hidden">
+<div class="card">
+<h2>📈 Mi evolución</h2>
+<div id="history">Todavía no hay entrenamientos.</div>
+</div>
+</section>
+
+<section id="profile" class="hidden">
+<div class="card">
+<h2>Mi objetivo</h2>
+59-60 kg · Mejorar resistencia · Tonificar
+<p>Mi gran reto: San Silvestre La Garriga.</p>
+</div>
+</section>
+</main>
+<nav>
+<button onclick="tab('home')">🏠<br>Inicio</button>
+<button onclick="tab('training')">🏃<br>Entrenos</button>
+<button onclick="tab('food')">🥗<br>Dieta</button>
+<button onclick="tab('progress')">📈<br>Progreso</button>
+<button onclick="tab('profile')">👤<br>Perfil</button>
+</nav>
+<script>
+let runs=JSON.parse(localStorage.getItem('runs')||'[]');
+let seconds=0,clockTimer=null;
+function tab(id){
+document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+}
+function refresh(){
+let km=runs.reduce((a,r)=>a+r.km,0);
+document.getElementById('sessions').textContent=runs.length;
+document.getElementById('kms').textContent=km.toFixed(2);
+document.getElementById('history').innerHTML=runs.length?
+runs.map(r=>'<p>'+r.date+' · '+r.km+' km · '+r.min+' min</p>').join(''):
+'Todavía no hay entrenamientos.';
+}
+function saveRun(){
+let km=Number(document.getElementById('distance').value);
+let min=Number(document.getElementById('duration').value);
+if(km<=0||min<=0){alert('Introduce distancia y duración');return;}
+runs.push({km,min,date:new Date().toLocaleDateString('es-ES')});
+localStorage.setItem('runs',JSON.stringify(runs));
+refresh();alert('¡Entrenamiento guardado! 🩵');
+}
+function display(){
+document.getElementById('clock').textContent=
+String(Math.floor(seconds/60)).padStart(2,'0')+':'+
+String(seconds%60).padStart(2,'0');
+}
+function start(){if(!clockTimer)clockTimer=setInterval(()=>{seconds++;display()},1000)}
+function pause(){clearInterval(clockTimer);clockTimer=null}
+function reset(){pause();seconds=0;display()}
+refresh();
+</script>
+</body>
+</html>
